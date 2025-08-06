@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5001:5001"
+    environment: 
+      - OMDB_API_KEY=3f0b6cea
+
+  frontend:
+    build: ./frontend
+    image: nginx:alpine
+    volumes:
+      - ./frontend:/usr/share/nginx/html/
+    ports: 
+      - "8080:80"
+    depends_on:
+      - backend
+  
