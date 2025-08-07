@@ -3,7 +3,7 @@ pipeline{
     stages {
         stage("Verifying tool") {
             steps {
-                ssh '''
+                sh '''
                     docker info
                     docker version
                     docker-compose version
