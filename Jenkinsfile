@@ -6,9 +6,20 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-                        chmod +x /usr/local/bin/docker-compose
-                        docker-compose version
+                        mkdir -p $HOME/bin
+                        sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o $HOME/bin/docker-compose
+                        sudo chmod +x $HOME/bin/docker-compose
+                        $HOME/bin/docker-compose version
+                    '''
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    withEnv(['PATH+DOT_LOCAL_BIN=$HOME/bin']) {
+                        sh 'docker-compose build'
                     '''
                 }
             }
@@ -37,7 +48,8 @@ pipeline {
                 script {
                     // Example: Run tests (you might need to adjust this based on your test setup)
                     // For a simple test, we can check if the services are up and running
-                    sh 'docker-compose ps'
+                    withEnv(['PATH+DOT_LOCAL_BIN=$HOME/bin']) {
+                        sh 'docker-compose ps'
                     // Add more specific tests here, e.g., curl to endpoints, run backend tests
                     // sh 'curl http://localhost:3000' // Example for frontend
                     // sh 'docker-compose exec backend npm test' // Example for backend tests
@@ -49,9 +61,10 @@ pipeline {
             steps {
                 script {
                     // Stop and remove all containers, networks, and volumes defined in the compose file
-                    sh 'docker-compose down -v'
+                    withEnv(['PATH+DOT_LOCAL_BIN=$HOME/bin']) {
+                        sh 'docker-compose down -v'
+                    }
                 }
-            }
         }
     }
 
