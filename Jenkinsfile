@@ -1,16 +1,54 @@
-pipeline{
+pipeline {
     agent any
+
     stages {
-        stage("Verifying tool") {
+        stage('Build') {
             steps {
-                sh '''
-                    docker info
-                    docker version
-                    docker-compose version
-                    curl --version
-                    jq --version
-                '''
+                script {
+                    // Build the Docker images using docker-compose
+                    sh 'docker-compose build'
+                }
             }
-         }
+        }
+
+        stage('Run') {
+            steps {
+                script {
+                    // Run the Docker containers in detached mode
+                    sh 'docker-compose up -d'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    // Example: Run tests (you might need to adjust this based on your test setup)
+                    // For a simple test, we can check if the services are up and running
+                    sh 'docker-compose ps'
+                    // Add more specific tests here, e.g., curl to endpoints, run backend tests
+                    // sh 'curl http://localhost:3000' // Example for frontend
+                    // sh 'docker-compose exec backend npm test' // Example for backend tests
+                }
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                script {
+                    // Stop and remove all containers, networks, and volumes defined in the compose file
+                    sh 'docker-compose down -v'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Ensure cleanup happens even if a stage fails
+            script {
+                sh 'docker-compose down -v'
+            }
+        }
     }
 }
