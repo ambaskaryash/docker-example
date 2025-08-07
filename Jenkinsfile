@@ -7,19 +7,9 @@ pipeline {
                 script {
                     sh '''
                         mkdir -p $HOME/bin
-                        sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o $HOME/bin/docker-compose
-                        sudo chmod +x $HOME/bin/docker-compose
+                        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o $HOME/bin/docker-compose
+                        chmod +x $HOME/bin/docker-compose
                         $HOME/bin/docker-compose version
-                    '''
-                }
-            }
-        }
-
-        stage('Build') {
-            steps {
-                script {
-                    withEnv(['PATH+DOT_LOCAL_BIN=$HOME/bin']) {
-                        sh 'docker-compose build'
                     '''
                 }
             }
@@ -37,8 +27,10 @@ pipeline {
         stage('Run') {
             steps {
                 script {
-                    // Run the Docker containers in detached mode
-                    sh 'docker-compose up -d'
+                    withEnv(['PATH+DOT_LOCAL_BIN=$HOME/bin']) {
+                        // Run the Docker containers in detached mode
+                        sh 'docker-compose up -d'
+                    }
                 }
             }
         }
@@ -65,6 +57,7 @@ pipeline {
                         sh 'docker-compose down -v'
                     }
                 }
+            }
         }
     }
 
