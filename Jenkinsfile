@@ -10,13 +10,10 @@ pipeline {
         stage('Setup Tools') {
             steps {
                 script {
-                    // Create bin directory and download docker-compose for Windows
-                    bat '''
-                        if not exist "%HOME%\\bin" mkdir "%HOME%\\bin"
-                        powershell -Command "Invoke-WebRequest -Uri https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Windows-x86_64.exe -OutFile %HOME%\\bin\\docker-compose.exe"
-                        attrib +x "%HOME%\\bin\\docker-compose.exe"
-                        "%HOME%\\bin\\docker-compose.exe" version
-                    '''
+                    // Ensure docker-compose is available
+                    if (!fileExists("${env.HOME}\\bin\\docker-compose.exe")) {
+                        error "docker-compose executable not found in ${env.HOME}\\bin"
+                    }
                 }
             }
         }
