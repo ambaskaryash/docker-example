@@ -2,18 +2,31 @@ pipeline {
     agent any
 
     environment {
-        // Adjust PATH to include your local bin directory if needed (Windows style)
-        PATH = "${env.HOME}\\bin;${env.PATH}"
+        // Add user's bin folder to PATH
+        PATH = "%USERPROFILE%\\bin;%PATH%"
     }
 
     stages {
+        stage('Print Env') {
+            steps {
+                // Print environment variables to verify paths
+                bat 'set'
+            }
+        }
+
         stage('Setup Tools') {
             steps {
                 script {
-                    // Ensure docker-compose is available
-                    if (!fileExists("${env.HOME}\\bin\\docker-compose.exe")) {
-                        error "docker-compose executable not found in ${env.HOME}\\bin"
-                    }
+                    bat '''
+                        REM Create bin directory if it does not exist
+                        if not exist "%USERPROFILE%\\bin" mkdir "%USERPROFILE%\\bin"
+
+                        REM Download the Windows version of docker-compose.exe
+                        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Windows-x86_64.exe" -o "%USERPROFILE%\\bin\\docker-compose.exe"
+
+                        REM Verify docker-compose version
+                        "%USERPROFILE%\\bin\\docker-compose.exe" version
+                    '''
                 }
             }
         }
@@ -21,7 +34,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    bat '"%HOME%\\bin\\docker-compose.exe" build'
+                    bat '"%USERPROFILE%\\bin\\docker-compose.exe" build'
                 }
             }
         }
@@ -29,7 +42,7 @@ pipeline {
         stage('Run') {
             steps {
                 script {
-                    bat '"%HOME%\\bin\\docker-compose.exe" up -d'
+                    bat '"%USERPROFILE%\\bin\\docker-compose.exe" up -d'
                 }
             }
         }
@@ -37,8 +50,10 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    bat '"%HOME%\\bin\\docker-compose.exe" ps'
-                    // Additional tests can be added here using bat commands
+                    bat '"%USERPROFILE%\\bin\\docker-compose.exe" ps'
+                    // Uncomment or add additional tests here, for example:
+                    // bat 'curl http://localhost:3000'
+                    // bat '"%USERPROFILE%\\bin\\docker-compose.exe" exec backend npm test'
                 }
             }
         }
@@ -46,7 +61,7 @@ pipeline {
         stage('Cleanup') {
             steps {
                 script {
-                    bat '"%HOME%\\bin\\docker-compose.exe" down -v'
+                    bat '"%USERPROFILE%\\bin\\docker-compose.exe" down -v'
                 }
             }
         }
@@ -55,7 +70,7 @@ pipeline {
     post {
         always {
             script {
-                bat '"%HOME%\\bin\\docker-compose.exe" down -v'
+                bat '"%USERPROFILE%\\bin\\docker-compose.exe" down -v'
             }
         }
     }
