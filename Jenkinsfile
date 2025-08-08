@@ -10,10 +10,10 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        sudo mkdir -p $HOME/bin
-                        sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o $HOME/bin/docker-compose
-                        sudo chmod +x $HOME/bin/docker-compose
-                        sudo $HOME/bin/docker-compose version
+                        mkdir -p $HOME/bin
+                        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o $HOME/bin/docker-compose
+                        chmod +x $HOME/bin/docker-compose
+                        $HOME/bin/docker-compose version
                     '''
                 }
             }
@@ -23,7 +23,7 @@ pipeline {
             steps {
                 script {
                     // Build the Docker images using docker-compose
-                    sh 'sudo docker-compose build'
+                    sh 'docker-compose build'
                 }
             }
         }
@@ -33,7 +33,7 @@ pipeline {
                 script {
                     withEnv(['PATH+DOT_LOCAL_BIN=$HOME/bin']) {
                         // Run the Docker containers in detached mode
-                        sh 'sudo docker-compose up -d'
+                        sh 'docker-compose up -d'
                     }
                 }
             }
@@ -43,7 +43,7 @@ pipeline {
             steps {
                 script {
                     withEnv(['PATH+DOT_LOCAL_BIN=$HOME/bin']) {
-                        sh 'sudo docker-compose ps'
+                        sh 'docker-compose ps'
                         // Add more specific tests here, e.g., curl to endpoints, run backend tests
                         // sh 'curl http://localhost:3000' // Example for frontend
                         // sh 'docker-compose exec backend npm test' // Example for backend tests
@@ -56,7 +56,7 @@ pipeline {
             steps {
                 script {
                     withEnv(['PATH+DOT_LOCAL_BIN=$HOME/bin']) {
-                        sh 'sudo docker-compose down -v'
+                        sh 'docker-compose down -v'
                     }
                 }
             }
@@ -67,7 +67,7 @@ pipeline {
         always {
             // Ensure cleanup happens even if a stage fails
             script {
-                sh 'sudo docker-compose down -v'
+                sh 'docker-compose down -v'
             }
         }
     }
